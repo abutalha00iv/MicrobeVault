@@ -1,23 +1,27 @@
 "use client";
 
-import { useCallback } from "react";
-import Particles from "@tsparticles/react";
-import type { Engine } from "@tsparticles/engine";
+import { useEffect, useState } from "react";
+import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 
 export function ParticleHero() {
-  const init = useCallback(async (engine: Engine) => {
-    await loadSlim(engine);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    initParticlesEngine(async (engine) => {
+      await loadSlim(engine);
+    }).then(() => setReady(true));
   }, []);
+
+  if (!ready) return null;
 
   return (
     <Particles
       id="hero-particles"
-      init={init}
       options={{
         background: { color: { value: "transparent" } },
         particles: {
-          number: { value: 55, density: { enable: true, area: 900 } },
+          number: { value: 55, density: { enable: true } },
           color: { value: ["#00F5D4", "#FFB627", "#7DD3FC"] },
           shape: { type: "circle" },
           opacity: { value: { min: 0.08, max: 0.22 } },

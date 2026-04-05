@@ -2,7 +2,26 @@
 
 import { Download } from "lucide-react";
 import { jsPDF } from "jspdf";
-import { toBibTeX } from "@/lib/references";
+
+function toBibTeX(reference: {
+  id: string;
+  title: string;
+  authors?: string | null;
+  year?: number | null;
+  journalOrPublisher?: string | null;
+  doi?: string | null;
+  url?: string | null;
+}) {
+  const key = reference.title.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return `@article{${key},
+  title = {${reference.title}},
+  author = {${reference.authors || "Unknown"}},
+  journal = {${reference.journalOrPublisher || "Unknown"}},
+  year = {${reference.year || ""}},
+  doi = {${reference.doi || ""}},
+  url = {${reference.url || ""}}
+}`;
+}
 
 export function ReferencesExportButtons({ references }: { references: any[] }) {
   const bibtex = references.map((reference) => toBibTeX(reference)).join("\n\n");

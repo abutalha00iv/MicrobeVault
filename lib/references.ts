@@ -1,3 +1,4 @@
+import "server-only";
 import { cacheGet, cacheSet } from "@/lib/redis";
 
 export async function fetchCrossRefByDoi(doi: string) {

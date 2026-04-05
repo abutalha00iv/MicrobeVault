@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-type GraphNode = {
+type GraphNode = d3.SimulationNodeDatum & {
   id: string;
   group: "microbe" | "host";
   label: string;

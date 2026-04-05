@@ -60,9 +60,19 @@ function extractPubMedAbstracts(xml: string) {
   });
 }
 
-export async function fetchNcbiBundle(options: { term?: string; taxonomyId?: number }) {
+type NcbiBundle = {
+  taxonomyId: number;
+  officialName: string;
+  taxonomyJson: Record<string, unknown>;
+  genbankCount: number;
+  pubmedCount: number;
+  sequenceSummary: string;
+  pubmedAbstracts: { pmid: string; title: string; abstract: string }[];
+};
+
+export async function fetchNcbiBundle(options: { term?: string; taxonomyId?: number }): Promise<NcbiBundle> {
   const cacheKey = `ncbi:${JSON.stringify(options)}`;
-  const cached = await cacheGet<unknown>(cacheKey);
+  const cached = await cacheGet<NcbiBundle>(cacheKey);
   if (cached) {
     return cached;
   }

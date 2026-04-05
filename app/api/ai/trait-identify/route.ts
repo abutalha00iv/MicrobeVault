@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { runClaudeJson } from "@/lib/anthropic";
 
 export async function POST(request: NextRequest) {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
         body.oxygenRequirement && body.oxygenRequirement !== "unknown" ? { oxygenRequirement: body.oxygenRequirement } : {},
         body.motility && body.motility !== "unknown" ? { motility: body.motility === "yes" } : {},
         body.sporeForming && body.sporeForming !== "unknown" ? { sporeForming: body.sporeForming === "yes" } : {},
-        body.habitat && body.habitat !== "unknown" ? { habitat: { contains: body.habitat, mode: "insensitive" } } : {}
+        body.habitat && body.habitat !== "unknown" ? { habitat: { contains: body.habitat, mode: Prisma.QueryMode.insensitive } } : {}
       ]
     };
 

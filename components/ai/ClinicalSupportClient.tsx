@@ -22,8 +22,8 @@ export function ClinicalSupportClient() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const payload = Object.fromEntries(formData.entries());
-    payload.symptoms = formData.getAll("symptoms");
-    payload.bodySystems = formData.getAll("bodySystems");
+    (payload as Record<string, unknown>).symptoms = formData.getAll("symptoms");
+    (payload as Record<string, unknown>).bodySystems = formData.getAll("bodySystems");
 
     try {
       setLoading(true);

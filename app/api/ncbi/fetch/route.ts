@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
           commonName: data.officialName,
           descriptionShort: `Imported from NCBI Taxonomy for ${data.officialName}.`,
           descriptionLong: `NCBI Explorer import for ${data.officialName}. Review and enrich this record in the admin panel.`,
-          kingdomLabel: data.taxonomyJson.rank || "Imported",
+          kingdomLabel: (data.taxonomyJson.rank as string) || "Imported",
           ncbiTaxonomyId: data.taxonomyId,
           ncbiLastFetched: new Date()
         }

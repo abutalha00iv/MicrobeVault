@@ -101,7 +101,7 @@ export async function refreshSearchIndex() {
   }
 }
 
-export async function getSearchSuggestions(query: string) {
+export async function getSearchSuggestions(query: string): Promise<SearchSuggestion[]> {
   const term = normalize(query);
   if (!term) {
     return [];
@@ -116,7 +116,7 @@ export async function getSearchSuggestions(query: string) {
       await redis.connect().catch(() => undefined);
       const values = await (redis as any).zrangebylex(SEARCH_ZSET, `[${term}`, `[${term}\xff`, "LIMIT", 0, 8);
       if (values.length) {
-        return values.map((entry) => JSON.parse(entry.split("::")[1]) as SearchSuggestion);
+        return values.map((entry: string) => JSON.parse(entry.split("::")[1]) as SearchSuggestion);
       }
     } catch {
       // fallback below
