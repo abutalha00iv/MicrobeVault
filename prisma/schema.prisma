@@ -1,0 +1,405 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GramStain {
+  positive
+  negative
+  variable
+  unknown
+}
+
+enum Morphology {
+  cocci
+  bacilli
+  spirochete
+  coccobacilli
+  vibrio
+  filamentous
+  pleomorphic
+  helical
+  spherical
+  amoeboid
+  irregular
+  unknown
+}
+
+enum OxygenRequirement {
+  aerobic
+  anaerobic
+  facultative
+  microaerophilic
+  aerotolerant
+  unknown
+}
+
+enum RelationshipType {
+  commensal
+  mutualistic
+  parasitic
+  saprophytic
+  predation
+}
+
+enum DiseaseSeverity {
+  mild
+  moderate
+  severe
+  critical
+}
+
+enum DiseaseRole {
+  primary_cause
+  secondary
+  opportunistic
+}
+
+enum ImageType {
+  SEM
+  light
+  fluorescence
+  illustration
+  life_cycle
+}
+
+enum FlowchartCategory {
+  gram_staining
+  metabolic
+  id_algorithm
+  infection_pathway
+  antibiotic_resistance
+  life_cycle
+  ecological
+}
+
+enum EventType {
+  discovery
+  epidemic
+  treatment
+  research_milestone
+}
+
+enum ReferenceSourceType {
+  journal_article
+  book
+  ncbi
+  who
+  cdc
+  textbook
+  wikipedia
+  news
+  other
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  EDITOR
+}
+
+model Microbe {
+  id                    String                 @id @default(cuid())
+  slug                  String                 @unique
+  commonName            String                 @map("common_name")
+  scientificName        String                 @unique @map("scientific_name")
+  descriptionShort      String                 @map("description_short")
+  descriptionLong       String                 @db.Text @map("description_long")
+  overviewHtml          String?                @db.Text @map("overview_html")
+  discoveryYear         Int?                   @map("discovery_year")
+  discoveredBy          String?                @map("discovered_by")
+  discoveryContext      String?                @db.Text @map("discovery_context")
+  gramStain             GramStain?             @map("gram_stain")
+  morphology            Morphology?            
+  sizeUm                String?                @map("size_um")
+  motility              Boolean?
+  sporeForming          Boolean?               @map("spore_forming")
+  oxygenRequirement     OxygenRequirement?     @map("oxygen_requirement")
+  temperatureRange      String?                @map("temperature_range")
+  phRange               String?                @map("ph_range")
+  habitat               String?                @db.Text
+  isInfectious          Boolean                @default(false) @map("is_infectious")
+  isDangerous           Boolean                @default(false) @map("is_dangerous")
+  bslLevel              Int?                   @map("bsl_level")
+  isBeneficial          Boolean                @default(false) @map("is_beneficial")
+  benefitDescription    String?                @db.Text @map("benefit_description")
+  harmDescription       String?                @db.Text @map("harm_description")
+  ecologicalRole        String?                @db.Text @map("ecological_role")
+  relationshipType      RelationshipType?      @map("relationship_type")
+  ncbiTaxonomyId        Int?                   @map("ncbi_taxonomy_id")
+  ncbiLastFetched       DateTime?              @map("ncbi_last_fetched")
+  imageUrl              String?                @map("image_url")
+  synonyms              Json?
+  kingdomLabel          String?                @map("kingdom_label")
+  cellWall              String?                @db.Text @map("cell_wall")
+  reproductionMethod    String?                @db.Text @map("reproduction_method")
+  metabolicType         String?                @db.Text @map("metabolic_type")
+  growthConditions      String?                @db.Text @map("growth_conditions")
+  colonialMorphology    String?                @db.Text @map("colonial_morphology")
+  specialStructures     Json?                  @map("special_structures")
+  phylogeneticPosition  String?                @db.Text @map("phylogenetic_position")
+  notableRelatives      Json?                  @map("notable_relatives")
+  researchMilestones    Json?                  @map("research_milestones")
+  historicalSignificance String?               @db.Text @map("historical_significance")
+  namedAfter            String?                @db.Text @map("named_after")
+  hostOrganisms         Json?                  @map("host_organisms")
+  roleInMicrobiome      String?                @db.Text @map("role_in_microbiome")
+  interactions          Json?                  @map("interactions")
+  pathogenesisMechanism String?                @db.Text @map("pathogenesis_mechanism")
+  virulenceFactors      Json?                  @map("virulence_factors")
+  antibioticProfile     String?                @db.Text @map("antibiotic_profile")
+  treatmentOptions      String?                @db.Text @map("treatment_options")
+  preventionMethods     String?                @db.Text @map("prevention_methods")
+  biosafetyExplanation  String?                @db.Text @map("biosafety_explanation")
+  biotechApplications   String?                @db.Text @map("biotech_applications")
+  foodIndustryUses      String?                @db.Text @map("food_industry_uses")
+  environmentalUses     String?                @db.Text @map("environmental_uses")
+  pharmaceuticalUses    String?                @db.Text @map("pharmaceutical_uses")
+  randomFacts           Json?                  @map("random_facts")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  taxonomy              Taxonomy?
+  diseases              MicrobeDisease[]
+  images                MicrobeImage[]
+  videos                MicrobeVideo[]
+  ncbiData              NcbiData?
+  timelineEvents        TimelineEvent[]
+  references            MicrobeReference[]
+
+  @@index([kingdomLabel])
+  @@index([isDangerous, isBeneficial])
+  @@map("microbes")
+}
+
+model Taxonomy {
+  id                   String   @id @default(cuid())
+  microbeId            String   @unique @map("microbe_id")
+  domain               String?
+  kingdom              String?
+  phylum               String?
+  taxClass             String?  @map("class")
+  order                String?
+  family               String?
+  genus                String?
+  species              String?
+  strain               String?
+  commonClassification String?  @map("common_classification")
+  microbe              Microbe   @relation(fields: [microbeId], references: [id], onDelete: Cascade)
+
+  @@index([kingdom, phylum, taxClass, order, family, genus])
+  @@map("taxonomy")
+}
+
+model Disease {
+  id                String            @id @default(cuid())
+  name              String            @unique
+  slug              String            @unique
+  description       String            @db.Text
+  overviewHtml      String?           @db.Text @map("overview_html")
+  icd10Code         String?           @map("icd10_code")
+  bodySystem        String            @map("body_system")
+  severity          DiseaseSeverity
+  transmissionRoute String?           @map("transmission_route")
+  incubationPeriod  String?           @map("incubation_period")
+  symptoms          Json?
+  treatment         String?           @db.Text
+  mortalityRate     Float?            @map("mortality_rate")
+  isEndemic         Boolean           @default(false) @map("is_endemic")
+  isEpidemic        Boolean           @default(false) @map("is_epidemic")
+  pathogenesis      String?           @db.Text
+  diagnosisMethods  String?           @db.Text @map("diagnosis_methods")
+  management        String?           @db.Text
+  prevention        String?           @db.Text
+  vaccines          String?           @db.Text
+  distributionRegions Json?           @map("distribution_regions")
+  outbreakTimeline  Json?             @map("outbreak_timeline")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  microbes          MicrobeDisease[]
+  timelineEvents    TimelineEvent[]
+  references        DiseaseReference[]
+
+  @@index([bodySystem, severity])
+  @@map("diseases")
+}
+
+model MicrobeDisease {
+  microbeId String      @map("microbe_id")
+  diseaseId String      @map("disease_id")
+  role      DiseaseRole
+  disease   Disease      @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
+  microbe   Microbe      @relation(fields: [microbeId], references: [id], onDelete: Cascade)
+
+  @@id([microbeId, diseaseId])
+  @@map("microbe_diseases")
+}
+
+model MicrobeImage {
+  id           String    @id @default(cuid())
+  microbeId    String    @map("microbe_id")
+  imageUrl     String    @map("image_url")
+  imageType    ImageType @map("image_type")
+  caption      String?
+  sourceCredit String?   @map("source_credit")
+  altText      String?   @map("alt_text")
+  isPrimary    Boolean   @default(false) @map("is_primary")
+  microbe      Microbe   @relation(fields: [microbeId], references: [id], onDelete: Cascade)
+
+  @@index([microbeId])
+  @@map("microbe_images")
+}
+
+model MicrobeVideo {
+  id             String   @id @default(cuid())
+  microbeId      String   @map("microbe_id")
+  youtubeVideoId String   @map("youtube_video_id")
+  title          String
+  channelTitle   String?  @map("channel_title")
+  duration       String?
+  thumbnailUrl   String?  @map("thumbnail_url")
+  fetchedAt      DateTime @default(now()) @map("fetched_at")
+  microbe        Microbe  @relation(fields: [microbeId], references: [id], onDelete: Cascade)
+
+  @@index([microbeId])
+  @@map("microbe_videos")
+}
+
+model Flowchart {
+  id               String               @id @default(cuid())
+  title            String
+  slug             String               @unique
+  description      String               @db.Text
+  category         FlowchartCategory
+  svgContent       String               @db.Text @map("svg_content")
+  mermaidCode      String?              @db.Text @map("mermaid_code")
+  pdfUrl           String?              @map("pdf_url")
+  nodeDescriptions Json?                @map("node_descriptions")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  references       FlowchartReference[]
+
+  @@index([category])
+  @@map("flowcharts")
+}
+
+model NcbiData {
+  id              String   @id @default(cuid())
+  microbeId       String   @unique @map("microbe_id")
+  taxonomyJson    Json     @map("taxonomy_json")
+  sequenceSummary String?  @db.Text @map("sequence_summary")
+  geneCount       Int?     @map("gene_count")
+  genbankCount    Int?     @map("genbank_count")
+  pubmedCount     Int?     @map("pubmed_count")
+  sraCount        Int?     @map("sra_count")
+  genomeAssemblies Int?    @map("genome_assemblies")
+  pubmedAbstracts Json?    @map("pubmed_abstracts")
+  lastFetched     DateTime @default(now()) @map("last_fetched")
+  microbe         Microbe  @relation(fields: [microbeId], references: [id], onDelete: Cascade)
+
+  @@map("ncbi_data")
+}
+
+model TimelineEvent {
+  id           String    @id @default(cuid())
+  year         Int
+  title        String
+  description  String    @db.Text
+  microbeId    String?   @map("microbe_id")
+  diseaseId    String?   @map("disease_id")
+  eventType    EventType @map("event_type")
+  significance String?
+  discoverers  String?
+  country      String?
+  microbe      Microbe?  @relation(fields: [microbeId], references: [id], onDelete: SetNull)
+  disease      Disease?  @relation(fields: [diseaseId], references: [id], onDelete: SetNull)
+
+  @@index([year, eventType])
+  @@map("timeline_events")
+}
+
+model Admin {
+  id             String        @id @default(cuid())
+  username       String        @unique
+  hashedPassword String        @map("hashed_password")
+  role           AdminRole     @default(EDITOR)
+  isActive       Boolean       @default(true) @map("is_active")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  activityLogs   ActivityLog[]
+  references     Reference[]   @relation("ReferenceAddedBy")
+
+  @@map("admins")
+}
+
+model Reference {
+  id                 String                 @id @default(cuid())
+  title              String
+  authors            String?
+  journalOrPublisher String?                @map("journal_or_publisher")
+  year               Int?
+  doi                String?                @unique
+  url                String?
+  volume             String?
+  issue              String?
+  pages              String?
+  sourceType         ReferenceSourceType    @map("source_type")
+  topic              String?
+  accessedDate       DateTime?              @map("accessed_date")
+  isVerified         Boolean                @default(false) @map("is_verified")
+  addedByAdminId     String?                @map("added_by_admin")
+  addedByAdmin       Admin?                 @relation("ReferenceAddedBy", fields: [addedByAdminId], references: [id], onDelete: SetNull)
+  microbes           MicrobeReference[]
+  diseases           DiseaseReference[]
+  flowcharts         FlowchartReference[]
+
+  @@index([sourceType, year])
+  @@map("references")
+}
+
+model MicrobeReference {
+  microbeId    String    @map("microbe_id")
+  referenceId  String    @map("reference_id")
+  contextNote  String?   @map("context_note")
+  microbe      Microbe   @relation(fields: [microbeId], references: [id], onDelete: Cascade)
+  reference    Reference @relation(fields: [referenceId], references: [id], onDelete: Cascade)
+
+  @@id([microbeId, referenceId])
+  @@map("microbe_references")
+}
+
+model DiseaseReference {
+  diseaseId    String    @map("disease_id")
+  referenceId  String    @map("reference_id")
+  contextNote  String?   @map("context_note")
+  disease      Disease   @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
+  reference    Reference @relation(fields: [referenceId], references: [id], onDelete: Cascade)
+
+  @@id([diseaseId, referenceId])
+  @@map("disease_references")
+}
+
+model FlowchartReference {
+  flowchartId  String    @map("flowchart_id")
+  referenceId  String    @map("reference_id")
+  contextNote  String?   @map("context_note")
+  flowchart    Flowchart @relation(fields: [flowchartId], references: [id], onDelete: Cascade)
+  reference    Reference @relation(fields: [referenceId], references: [id], onDelete: Cascade)
+
+  @@id([flowchartId, referenceId])
+  @@map("flowchart_references")
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  adminId     String   @map("admin_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String?  @map("entity_id")
+  description String
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  admin       Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, createdAt])
+  @@map("activity_logs")
+}

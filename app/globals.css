@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --background: #0a0e1a;
+  --foreground: #eff7ff;
+  --muted: #92abc1;
+  --cyan: #00f5d4;
+  --amber: #ffb627;
+  --benefit: #3ddb85;
+  --pathogen: #ff4757;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(0, 245, 212, 0.1), transparent 28%),
+    radial-gradient(circle at 80% 0%, rgba(255, 182, 39, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 28%),
+    var(--background);
+  background-image:
+    radial-gradient(circle at center, rgba(0, 245, 212, 0.06) 0 1px, transparent 1px),
+    linear-gradient(30deg, rgba(255, 255, 255, 0.015), transparent 55%);
+  background-size: 32px 32px, 100% 100%;
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+* {
+  border-color: rgba(0, 245, 212, 0.16);
+}
+
+*::selection {
+  background: rgba(0, 245, 212, 0.24);
+  color: white;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  @apply outline-none transition-all duration-200;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  @apply ring-2 ring-cyan ring-offset-2 ring-offset-ink;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 245, 212, 0.2);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 0 1px rgba(0, 245, 212, 0.08), 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.hover-glow {
+  @apply transition duration-300 hover:scale-[1.02] hover:border-cyan hover:shadow-glow;
+}
+
+.hex-grid {
+  background-image:
+    linear-gradient(30deg, rgba(255, 255, 255, 0.03) 12%, transparent 12.5%, transparent 87%, rgba(255, 255, 255, 0.03) 87.5%, rgba(255, 255, 255, 0.03)),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.03) 12%, transparent 12.5%, transparent 87%, rgba(255, 255, 255, 0.03) 87.5%, rgba(255, 255, 255, 0.03)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 2%, transparent 2.5%, transparent 97%, rgba(255, 255, 255, 0.025) 97.5%, rgba(255, 255, 255, 0.025));
+  background-size: 72px 124px;
+  background-position: 0 0, 0 0, 36px 62px;
+}
+
+.microscope-loader {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+
+.microscope-loader::before,
+.microscope-loader::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid rgba(0, 245, 212, 0.25);
+  animation: spin 2s linear infinite;
+}
+
+.microscope-loader::after {
+  inset: 14px;
+  border-color: rgba(255, 182, 39, 0.45);
+  animation-direction: reverse;
+}
+
+.loading-line {
+  position: absolute;
+  width: 8px;
+  height: 34px;
+  background: linear-gradient(180deg, rgba(0, 245, 212, 1), rgba(255, 182, 39, 0.8));
+  border-radius: 9999px;
+  left: 32px;
+  top: 18px;
+  transform-origin: center bottom;
+  animation: microscopeArm 1.3s ease-in-out infinite;
+}
+
+@keyframes microscopeArm {
+  0%,
+  100% {
+    transform: rotate(-18deg) scaleY(1);
+  }
+  50% {
+    transform: rotate(18deg) scaleY(0.95);
+  }
+}
+
+.skeleton {
+  @apply animate-pulse rounded-2xl bg-white/5;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 245, 212, 0.2);
+  border-radius: 9999px;
+}
+
+.prose-microbe p {
+  @apply mb-4 leading-7 text-slate-200;
+}
+
+.prose-microbe sup a {
+  @apply text-cyan no-underline;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  border-radius: 9999px;
+  background: #0f172a;
+  color: white;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
