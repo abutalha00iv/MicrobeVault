@@ -1,9 +1,4 @@
-import Redis from "ioredis";
-
-declare global {
-  // eslint-disable-next-line no-var
-  var redisClient: Redis | null | undefined;
-}
+import { Redis } from "@upstash/redis";
 
 type MemoryEntry = {
   value: string;
@@ -12,37 +7,30 @@ type MemoryEntry = {
 
 const memoryStore = new Map<string, MemoryEntry>();
 
-function createRedisClient() {
-  if (!process.env.REDIS_URL) {
+function createRedisClient(): Redis | null {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
     return null;
   }
-
-  return new Redis(process.env.REDIS_URL, {
-    lazyConnect: true,
-    maxRetriesPerRequest: 1
+  return new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
   });
 }
 
-export const redis = global.redisClient ?? createRedisClient();
-if (global.redisClient === undefined) {
-  global.redisClient = redis;
-}
+export const redis = createRedisClient();
 
 export async function cacheGet<T>(key: string): Promise<T | null> {
   if (redis) {
     try {
-      await redis.connect().catch(() => undefined);
-      const value = await redis.get(key);
-      return value ? (JSON.parse(value) as T) : null;
+      const value = await redis.get<T>(key);
+      return value ?? null;
     } catch {
       return null;
     }
   }
 
   const entry = memoryStore.get(key);
-  if (!entry) {
-    return null;
-  }
+  if (!entry) return null;
 
   if (entry.expiresAt && entry.expiresAt < Date.now()) {
     memoryStore.delete(key);
@@ -53,12 +41,9 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
 }
 
 export async function cacheSet<T>(key: string, value: T, ttlSeconds = 3600) {
-  const serialized = JSON.stringify(value);
-
   if (redis) {
     try {
-      await redis.connect().catch(() => undefined);
-      await redis.set(key, serialized, "EX", ttlSeconds);
+      await redis.set(key, value, { ex: ttlSeconds });
       return;
     } catch {
       // fall back to memory
@@ -66,15 +51,14 @@ export async function cacheSet<T>(key: string, value: T, ttlSeconds = 3600) {
   }
 
   memoryStore.set(key, {
-    value: serialized,
-    expiresAt: Date.now() + ttlSeconds * 1000
+    value: JSON.stringify(value),
+    expiresAt: Date.now() + ttlSeconds * 1000,
   });
 }
 
 export async function cacheDelete(key: string) {
   if (redis) {
     try {
-      await redis.connect().catch(() => undefined);
       await redis.del(key);
       return;
     } catch {
@@ -84,4 +68,3 @@ export async function cacheDelete(key: string) {
 
   memoryStore.delete(key);
 }
-

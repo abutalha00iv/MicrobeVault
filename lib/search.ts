@@ -1,9 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { cacheGet, cacheSet, redis } from "@/lib/redis";
+import { cacheGet, cacheSet } from "@/lib/redis";
 import { SearchSuggestion } from "@/lib/types";
 
-const SEARCH_ZSET = "microbevault:search:zset";
 const POPULAR_CACHE_KEY = "microbevault:search:popular";
 
 function normalize(value: string) {
@@ -87,18 +86,6 @@ export async function refreshSearchIndex() {
 
   await cacheSet(POPULAR_CACHE_KEY, suggestions.slice(0, 8), 86400);
 
-  if (redis) {
-    try {
-      await redis.connect().catch(() => undefined);
-      await redis.del(SEARCH_ZSET);
-      if (suggestions.length) {
-        const members = suggestions.flatMap((suggestion) => [0, `${normalize(suggestion.title)}::${JSON.stringify(suggestion)}`] as const);
-        await (redis as any).zadd(SEARCH_ZSET, ...members);
-      }
-    } catch {
-      // Redis is optional for local fallback.
-    }
-  }
 }
 
 export async function getSearchSuggestions(query: string): Promise<SearchSuggestion[]> {
@@ -109,18 +96,6 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
 
   if (term.length === 1) {
     return (await cacheGet<SearchSuggestion[]>(POPULAR_CACHE_KEY)) || [];
-  }
-
-  if (redis) {
-    try {
-      await redis.connect().catch(() => undefined);
-      const values = await (redis as any).zrangebylex(SEARCH_ZSET, `[${term}`, `[${term}\xff`, "LIMIT", 0, 8);
-      if (values.length) {
-        return values.map((entry: string) => JSON.parse(entry.split("::")[1]) as SearchSuggestion);
-      }
-    } catch {
-      // fallback below
-    }
   }
 
   const [microbes, diseases, flowcharts] = await Promise.all([
