@@ -101,6 +101,8 @@ function expandCompact(seed: CompactMicrobeSeed): MicrobeSeed {
         : seed.kingdomLabel === "Algae"
           ? "6.0-8.0"
           : "6.0-7.5",
+    isInfectious: seed.isDangerous,
+    bslLevel: seed.isDangerous ? 2 : 1,
     benefitDescription: beneficial || "",
     harmDescription: harmful || "",
     pathogenesisMechanism:

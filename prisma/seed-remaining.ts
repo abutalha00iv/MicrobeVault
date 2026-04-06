@@ -6,11 +6,14 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import fullJson from "./microbes_full.json";
+import fullJsonRaw from "./microbes_full.json";
+import type { CompactMicrobeSeed } from "./seed-data";
 
 const prisma = new PrismaClient();
 
-type CompactSeed = (typeof fullJson)[number];
+const fullJson = fullJsonRaw as CompactMicrobeSeed[];
+
+type CompactSeed = CompactMicrobeSeed;
 
 // ── Verified Wikimedia direct URLs (from fix-data.ts API lookups) ─────────────
 const VERIFIED_IMAGE_URLS: Record<string, string> = {
